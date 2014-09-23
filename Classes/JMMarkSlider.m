@@ -52,6 +52,8 @@
 }
 
 - (void)drawRect:(CGRect)rect {
+    if (rect.size.height < 22)
+        rect.size.height = 22;
     [super drawRect:rect];
 
     // We create an innerRect in which we paint the lines
