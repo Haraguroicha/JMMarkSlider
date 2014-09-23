@@ -16,4 +16,5 @@
 @property (nonatomic) UIColor *unselectedBarColor;
 @property (nonatomic) UIImage *handlerImage;
 @property (nonatomic) UIColor *handlerColor;
+@property (nonatomic) CGFloat minimumSnapValue;
 @end

@@ -10,89 +10,100 @@
 
 @implementation JMMarkSlider
 
-- (id)initWithFrame:(CGRect)frame
-{
+- (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         // Default configuration
         self.markColor = [UIColor colorWithRed:106/255.0 green:106/255.0 blue:124/255.0 alpha:0.7];
-        self.markPositions = @[@10,@20,@30,@40,@50,@60,@70,@80,@90,@100];
+        self.markPositions = @[@10,@20,@30,@40,@50,@60,@70,@80,@90];
         self.markWidth = 1.0;
         self.selectedBarColor = [UIColor colorWithRed:179/255.0 green:179/255.0 blue:193/255.0 alpha:0.8];
         self.unselectedBarColor = [UIColor colorWithRed:55/255.0 green:55/255.0 blue:94/255.0 alpha:0.8];
-
+        self.minimumSnapValue = 0.1;
+        [self addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
     }
     return self;
 }
 
-- (id)initWithCoder:(NSCoder *)aDecoder
-{
+- (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
         // Default configuration
         self.markColor = [UIColor colorWithRed:106/255.0 green:106/255.0 blue:124/255.0 alpha:0.7];
-        self.markPositions = @[@10,@20,@30,@40,@50,@60,@70,@80,@90,@100];
+        self.markPositions = @[@10,@20,@30,@40,@50,@60,@70,@80,@90];
         self.markWidth = 1.0;
         self.selectedBarColor = [UIColor colorWithRed:179/255.0 green:179/255.0 blue:193/255.0 alpha:0.8];
         self.unselectedBarColor = [UIColor colorWithRed:55/255.0 green:55/255.0 blue:94/255.0 alpha:0.8];
+        self.minimumSnapValue = 0.1;
+        [self addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
     }
     return self;
 }
 
-- (void)drawRect:(CGRect)rect
-{
+- (void)sliderValueChanged:(UISlider *)sender {
+    if (self.minimumSnapValue > 0) {
+        float snap = 1 / self.minimumSnapValue;
+        float f = roundf(sender.value * snap) / snap;
+        //NSLog(@"slider value = %f => %f", sender.value, f);
+        if(f != sender.value) {
+            [sender setValue:f animated:YES];
+        }
+    }
+}
+
+- (void)drawRect:(CGRect)rect {
     [super drawRect:rect];
-    
+
     // We create an innerRect in which we paint the lines
-    CGRect innerRect = CGRectInset(rect, 1.0, 10.0);
-    
+    CGRect innerRect = CGRectInset(rect, 0.0, 10.0);
+
     UIGraphicsBeginImageContextWithOptions(innerRect.size, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
-    
+
     // Selected side
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextSetLineWidth(context, 12.0);
-    CGContextMoveToPoint(context, 6, CGRectGetHeight(innerRect)/2);
-    CGContextAddLineToPoint(context, innerRect.size.width - 10, CGRectGetHeight(innerRect)/2);
+    CGContextMoveToPoint(context, 10, CGRectGetHeight(innerRect)/2);
+    CGContextAddLineToPoint(context, innerRect.size.width - 20, CGRectGetHeight(innerRect)/2);
     CGContextSetStrokeColorWithColor(context, [self.selectedBarColor CGColor]);
     CGContextStrokePath(context);
     UIImage *selectedSide = [UIGraphicsGetImageFromCurrentImageContext() resizableImageWithCapInsets:UIEdgeInsetsZero];
-    
+
     // Unselected side
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextSetLineWidth(context, 12.0);
-    CGContextMoveToPoint(context, 6, CGRectGetHeight(innerRect)/2);
-    CGContextAddLineToPoint(context, innerRect.size.width - 10, CGRectGetHeight(innerRect)/2);
+    CGContextMoveToPoint(context, 9, CGRectGetHeight(innerRect)/2);
+    CGContextAddLineToPoint(context, innerRect.size.width - 18, CGRectGetHeight(innerRect)/2);
     CGContextSetStrokeColorWithColor(context, [self.unselectedBarColor CGColor]);
     CGContextStrokePath(context);
     UIImage *unselectedSide = [UIGraphicsGetImageFromCurrentImageContext() resizableImageWithCapInsets:UIEdgeInsetsZero];
-    
+
     // Set trips on selected side
     [selectedSide drawAtPoint:CGPointMake(0,0)];
     for (int i = 0; i < [self.markPositions count]; i++) {
         CGContextSetLineWidth(context, self.markWidth);
-        float position = [self.markPositions[i]floatValue] * innerRect.size.width / 100.0;
+        float position = [self.markPositions[i]floatValue] * (innerRect.size.width - 20) / 100.0 + 10;
         CGContextMoveToPoint(context, position, CGRectGetHeight(innerRect)/2 - 5);
         CGContextAddLineToPoint(context, position, CGRectGetHeight(innerRect)/2 + 5);
         CGContextSetStrokeColorWithColor(context, [self.markColor CGColor]);
         CGContextStrokePath(context);
     }
     UIImage *selectedStripSide = [UIGraphicsGetImageFromCurrentImageContext() resizableImageWithCapInsets:UIEdgeInsetsZero];
-    
+
     // Set trips on unselected side
     [unselectedSide drawAtPoint:CGPointMake(0,0)];
     for (int i = 0; i < [self.markPositions count]; i++) {
         CGContextSetLineWidth(context, self.markWidth);
-        float position = [self.markPositions[i]floatValue] * innerRect.size.width / 100.0;
+        float position = [self.markPositions[i]floatValue] * (innerRect.size.width - 20) / 100.0 + 10;
         CGContextMoveToPoint(context, position, CGRectGetHeight(innerRect)/2 - 5);
         CGContextAddLineToPoint(context, position, CGRectGetHeight(innerRect)/2 + 5);
         CGContextSetStrokeColorWithColor(context, [self.markColor CGColor]);
         CGContextStrokePath(context);
     }
     UIImage *unselectedStripSide = [UIGraphicsGetImageFromCurrentImageContext() resizableImageWithCapInsets:UIEdgeInsetsZero];
-    
+
     UIGraphicsEndImageContext();
-    
+
     [self setMinimumTrackImage:selectedStripSide forState:UIControlStateNormal];
     [self setMaximumTrackImage:unselectedStripSide forState:UIControlStateNormal];
     if (self.handlerImage != nil) {
