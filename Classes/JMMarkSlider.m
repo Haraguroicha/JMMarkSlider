@@ -11,6 +11,8 @@
 @implementation JMMarkSlider
 
 - (id)initWithFrame:(CGRect)frame {
+    if (frame.size.height < 35)
+        frame.size.height = 35;
     self = [super initWithFrame:frame];
     if (self) {
         // Default configuration
@@ -20,6 +22,11 @@
         self.selectedBarColor = [UIColor colorWithRed:179/255.0 green:179/255.0 blue:193/255.0 alpha:0.8];
         self.unselectedBarColor = [UIColor colorWithRed:55/255.0 green:55/255.0 blue:94/255.0 alpha:0.8];
         self.minimumSnapValue = 0.1;
+        self.scrollInset = 3.0;
+        UITapGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sliderTappedOrTouched:)];
+        [self addGestureRecognizer:tgr];
+        UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(sliderTappedOrTouched:)];
+        [self addGestureRecognizer:pan];
         [self addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
     }
     return self;
@@ -28,6 +35,10 @@
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
+        CGRect frame = self.frame;
+        if (frame.size.height < 35)
+            frame.size.height = 35;
+        self.frame = frame;
         // Default configuration
         self.markColor = [UIColor colorWithRed:106/255.0 green:106/255.0 blue:124/255.0 alpha:0.7];
         self.markPositions = @[@10,@20,@30,@40,@50,@60,@70,@80,@90];
@@ -35,14 +46,29 @@
         self.selectedBarColor = [UIColor colorWithRed:179/255.0 green:179/255.0 blue:193/255.0 alpha:0.8];
         self.unselectedBarColor = [UIColor colorWithRed:55/255.0 green:55/255.0 blue:94/255.0 alpha:0.8];
         self.minimumSnapValue = 0.1;
+        self.scrollInset = 3.0;
+        UITapGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sliderTappedOrTouched:)];
+        [self addGestureRecognizer:tgr];
+        UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(sliderTappedOrTouched:)];
+        [self addGestureRecognizer:pan];
         [self addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
     }
     return self;
 }
 
-- (void)sliderValueChanged:(UISlider *)sender {
-    if (self.minimumSnapValue > 0) {
-        float snap = 1 / self.minimumSnapValue;
+- (void)sliderTappedOrTouched:(UIGestureRecognizer *)g {
+    JMMarkSlider *s = (JMMarkSlider *)g.view;
+    if (s.highlighted)
+        return;
+    CGPoint pt = [g locationInView:s];
+    CGFloat value = s.minimumValue + pt.x / s.bounds.size.width * (s.maximumValue - s.minimumValue);
+    [s setValue:value animated:YES];
+    [s sliderValueChanged:s];
+}
+
+- (void)sliderValueChanged:(JMMarkSlider *)sender {
+    if (sender.minimumSnapValue > 0) {
+        float snap = 1 / sender.minimumSnapValue;
         float f = roundf(sender.value * snap) / snap;
         //NSLog(@"slider value = %f => %f", sender.value, f);
         if(f != sender.value) {
@@ -52,12 +78,10 @@
 }
 
 - (void)drawRect:(CGRect)rect {
-    if (rect.size.height < 22)
-        rect.size.height = 22;
     [super drawRect:rect];
 
     // We create an innerRect in which we paint the lines
-    CGRect innerRect = CGRectInset(rect, 0.0, 10.0);
+    CGRect innerRect = CGRectInset(rect, 0.0, (CGRectGetHeight(rect) - self.scrollInset) / 2);
 
     UIGraphicsBeginImageContextWithOptions(innerRect.size, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();

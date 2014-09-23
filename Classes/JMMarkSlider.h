@@ -17,4 +17,5 @@
 @property (nonatomic) UIImage *handlerImage;
 @property (nonatomic) UIColor *handlerColor;
 @property (nonatomic) CGFloat minimumSnapValue;
+@property (nonatomic) CGFloat scrollInset;
 @end
