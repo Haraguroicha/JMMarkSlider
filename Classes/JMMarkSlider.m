@@ -63,7 +63,7 @@
     CGPoint pt = [g locationInView:s];
     CGFloat value = s.minimumValue + pt.x / s.bounds.size.width * (s.maximumValue - s.minimumValue);
     [s setValue:value animated:YES];
-    [s sliderValueChanged:s];
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
 - (void)sliderValueChanged:(JMMarkSlider *)sender {
@@ -75,6 +75,7 @@
             [sender setValue:f animated:YES];
         }
     }
+    [self sendActionsForControlEvents:UIControlEventEditingDidEnd];
 }
 
 - (void)drawRect:(CGRect)rect {
