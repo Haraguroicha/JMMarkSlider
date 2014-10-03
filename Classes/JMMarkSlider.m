@@ -71,11 +71,12 @@
         float snap = 1 / sender.minimumSnapValue;
         float f = roundf(sender.value * snap) / snap;
         //NSLog(@"slider value = %f => %f", sender.value, f);
-        if(f != sender.value) {
+        if(f != sender.tag) {
+            [sender setTag:f];
             [sender setValue:f animated:YES];
+            [self sendActionsForControlEvents:UIControlEventEditingDidEnd];
         }
     }
-    [self sendActionsForControlEvents:UIControlEventEditingDidEnd];
 }
 
 - (void)drawRect:(CGRect)rect {
