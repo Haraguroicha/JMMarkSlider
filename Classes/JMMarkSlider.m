@@ -70,11 +70,14 @@
     if (sender.minimumSnapValue > 0) {
         float snap = 1 / sender.minimumSnapValue;
         float f = roundf(sender.value * snap) / snap;
+        float mutiple = 1.0 / (float)snap;
         //NSLog(@"slider value = %f => %f", sender.value, f);
-        if(f != sender.tag) {
-            [sender setTag:f];
+        if(f != sender.value) {
             [sender setValue:f animated:YES];
-            [self sendActionsForControlEvents:UIControlEventEditingDidEnd];
+            if (f * mutiple != sender.tag) {
+                [self sendActionsForControlEvents:UIControlEventEditingDidEnd];
+            }
+            [sender setTag:f * mutiple];
         }
     }
 }
